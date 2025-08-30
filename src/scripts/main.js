@@ -20,12 +20,12 @@ let keydown = false;
 gameButton.addEventListener('click', (cl) => {
   gameButton.classList.add('restart');
   gameButton.textContent = 'Restart';
+  message.forEach((el) => el.classList.add('hidden'));
 
   if (cl.target.classList.contains('start')) {
     gameButton.classList.remove('start');
     gameButton.classList.add('restart');
     gameButton.textContent = 'Restart';
-    message.forEach((el) => el.classList.add('hidden'));
 
     keydown = true;
     game.start();
@@ -53,6 +53,12 @@ function gameBoardUpdate(arr) {
     fieldCell[i].textContent = element;
 
     fieldCell[i].classList = `field-cell field-cell--${element}`;
+
+    if (gameBord[i] !== 0 && !fieldCell[i].classList.contains('cell-new')) {
+      fieldCell[i].classList.add('cell-new');
+
+      setTimeout(() => fieldCell[i].classList.remove('cell-new'), 200);
+    }
   }
 
   score.textContent = game.gameScore;
@@ -95,3 +101,34 @@ function keyPlay() {
     });
   }
 }
+
+let startX, startY, endX, endY;
+
+document.addEventListener('touchstart', (e) => {
+  startX = e.touches[0].clientX;
+  startY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchend', (e) => {
+  endX = e.changedTouches[0].clientX;
+  endY = e.changedTouches[0].clientY;
+
+  const dx = endX - startX;
+  const dy = endY - startY;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 30) {
+      game.moveRight();
+    } else if (dx < -30) {
+      game.moveLeft();
+    }
+  } else {
+    if (dy > 30) {
+      game.moveDown();
+    } else if (dy < -30) {
+      game.moveUp();
+    }
+  }
+
+  gameBoardUpdate();
+});
