@@ -15,28 +15,32 @@ const loseMessage = document.querySelector('.message-lose');
 const winMessage = document.querySelector('.message-win');
 const score = document.querySelector('.game-score');
 
-let click = 0;
-let gamestart = false;
 let keydown = false;
 
 gameButton.addEventListener('click', (cl) => {
-  if (cl.target.classList.contains('start') && click === 0) {
+  gameButton.classList.add('restart');
+  gameButton.textContent = 'Restart';
+
+  if (cl.target.classList.contains('start')) {
+    gameButton.classList.remove('start');
+    gameButton.classList.add('restart');
+    gameButton.textContent = 'Restart';
     message.forEach((el) => el.classList.add('hidden'));
-    click = 1;
+
     keydown = true;
     game.start();
     gameBoardUpdate();
     keyPlay();
+
+    return;
   }
 
   if (cl.target.classList.contains('restart')) {
     gameButton.classList.add('start');
     gameButton.classList.remove('restart');
     gameButton.textContent = 'Start';
-    gameBoardUpdate();
-    click = 0;
-
     game.restart();
+    gameBoardUpdate();
   }
 });
 
@@ -57,6 +61,7 @@ function gameBoardUpdate(arr) {
     game.statusGame = 'lose';
 
     loseMessage.classList = 'message message-lose';
+    game.getStatus();
   }
 
   if (game.statusGame === 'win') {
@@ -69,16 +74,6 @@ function gameBoardUpdate(arr) {
 function keyPlay() {
   if (keydown) {
     document.addEventListener('keydown', (e) => {
-      gamestart = true;
-
-      if (gamestart) {
-        gameButton.classList.remove('start');
-        gameButton.classList.add('restart');
-        gameButton.textContent = 'Restart';
-
-        gameBoardUpdate();
-      }
-
       switch (e.key) {
         case 'ArrowLeft':
           game.moveLeft();
