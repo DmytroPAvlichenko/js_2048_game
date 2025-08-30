@@ -1,181 +1,227 @@
 'use strict';
 
-const tbody = document.querySelector('tbody');
-const table = document.querySelector('table');
-// const tbodyTr = document.querySelectorAll('tbody tr');
-// const tbodyTd = document.querySelectorAll('tbody td');
-
 class Game {
   constructor(initialState) {
-    this.startTable = initialState || [
+    this.statusGame = 'idle';
+    this.gameScore = 0;
+
+    this.gameStatus = initialState || [
       [0, 0, 0, 0],
       [0, 0, 0, 0],
       [0, 0, 0, 0],
       [0, 0, 0, 0],
     ];
+    this.tabelStart = this.gameStatus.map((row) => [...row]);
   }
 
   moveLeft() {
-    Array.from(tbody.rows).forEach((row) => {
-      const cells = Array.from(row.cells);
-      const values = cells.map((cell) => Number(cell.textContent) || 0);
+    if (this.statusGame !== 'playing') {
+      return;
+    }
 
-      const newValues = values.filter((v) => v !== 0);
+    let change = false;
 
-      for (let i = 0; i < newValues.length - 1; i++) {
-        if (newValues[i] === newValues[i + 1]) {
-          newValues[i] *= 2;
-          newValues[i + 1] = 0;
+    for (let i = 0; i < this.gameStatus.length; i++) {
+      const row = this.gameStatus[i];
+
+      let newRow = row.filter((n) => n !== 0);
+
+      newRow = this.cellgood(newRow);
+
+      for (let n = 0; n < newRow.length; n++) {
+        if (this.gameStatus[i][n] !== newRow[n]) {
+          this.gameStatus[i] = newRow;
+          change = true;
         }
       }
+    }
 
-      const finalValues = newValues.filter((v) => v !== 0);
-
-      while (finalValues.length < cells.length) {
-        finalValues.push(0);
-      }
-
-      cells.forEach((cell, i) => {
-        cell.textContent = finalValues[i] === 0 ? '' : finalValues[i];
-        // cell.classList.add(`field-cell--${finalValues}`);
-      });
-    });
-
-    this.genereteCellNum(1);
+    if (change) {
+      this.randomCells();
+      this.getScore();
+    }
   }
 
   moveRight() {
-    Array.from(tbody.rows).forEach((row) => {
-      const cells = Array.from(row.cells);
-      const values = cells.map((cell) => Number(cell.textContent) || 0);
+    if (this.statusGame !== 'playing') {
+      return;
+    }
 
-      const newValues = values.filter((v) => v !== 0);
+    let change = false;
 
-      for (let i = newValues.length - 1; i > 0; i--) {
-        if (newValues[i] === newValues[i - 1]) {
-          newValues[i - 1] *= 2;
-          newValues[i] = 0;
+    for (let i = 0; i < this.gameStatus.length; i++) {
+      const row = [...this.gameStatus[i]].reverse();
+
+      let newRow = row.filter((n) => n !== 0);
+
+      newRow = this.cellgood(newRow);
+
+      newRow.reverse();
+
+      for (let n = 0; n < row.length; n++) {
+        if (this.gameStatus[i][n] !== newRow[n]) {
+          this.gameStatus[i] = newRow;
+          change = true;
         }
       }
+    }
 
-      const finalValues = newValues.filter((v) => v !== 0);
-
-      while (finalValues.length < cells.length) {
-        finalValues.unshift(0);
-      }
-
-      cells.forEach((cell, i) => {
-        cell.textContent = finalValues[i] === 0 ? '' : finalValues[i];
-      });
-    });
-    this.getScore();
-    this.genereteCellNum(1);
+    if (change) {
+      this.randomCells();
+      this.getScore();
+    }
   }
 
   moveUp() {
-    this.genereteCellNum(1);
+    if (this.statusGame !== 'playing') {
+      return;
+    }
+
+    let change = false;
+
+    for (let i = 0; i < this.gameStatus.length; i++) {
+      const colum = this.gameStatus.map((row) => row[i]);
+
+      let newColumn = colum.filter((n) => n !== 0);
+
+      newColumn = this.cellgood(newColumn);
+
+      for (let k = 0; k < colum.length; k++) {
+        if (this.gameStatus[k][i] !== newColumn[k]) {
+          change = true;
+          this.gameStatus[k][i] = newColumn[k];
+        }
+      }
+    }
+
+    if (change) {
+      this.randomCells();
+      this.getScore();
+    }
   }
 
   moveDown() {
-    this.genereteCellNum(1);
+    if (this.statusGame !== 'playing') {
+      return;
+    }
+
+    let change = false;
+
+    for (let i = 0; i < this.gameStatus.length; i++) {
+      const colum = this.gameStatus.map((row) => row[i]).reverse();
+
+      let newColumn = colum.filter((n) => n !== 0);
+
+      newColumn = this.cellgood(newColumn);
+
+      newColumn.reverse();
+
+      for (let k = 0; k < colum.length; k++) {
+        if (this.gameStatus[k][i] !== newColumn[k]) {
+          change = true;
+          this.gameStatus[k][i] = newColumn[k];
+        }
+      }
+    }
+
+    if (change) {
+      this.randomCells();
+      this.getScore();
+    }
   }
 
-  /**
-   * @returns {number}
-   */
   getScore() {
-    const cameScore = document.querySelector('.game-score');
-    const number = +cameScore.textContent;
+    this.winGame();
+    this.losegame();
 
-    cameScore.textContent = number + 2;
+    return this.gameScore;
   }
 
-  /**
-   * @returns {number[][]}
-   */
   getState() {
-    const statysCame = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-    ];
-
-    for (let i = 0; i < 4; i++) {
-      for (let j = 0; j < 4; j++) {
-        statysCame[i][j] =
-          tbody.rows[i].cells[j].textContent !== ''
-            ? +tbody.rows[i].cells[j].textContent
-            : 0;
-      }
-    }
-
-    return statysCame;
+    return this.gameStatus;
   }
-  /**
-   * Возвращает текущий статус игры.
-   *
-   * @returns {string} Одно из: «бездействует», «играет»,
-   *  «выигрывает», «проигрывает»
-   *
-   * `idle` - игра еще не началась (исходное состояние);
-   * `playing` - игра в процессе;
-   * `win` - игра выиграна;
-   * `lose` - игра проиграна
-   */
-  getStatus() {}
 
-  /**
-   * Starts the game.
-   */
+  getStatus() {
+    return this.statusGame;
+  }
+
   start() {
-    for (let i = 0; i < 4; i++) {
-      for (let j = 0; j < 4; j++) {
-        tbody.rows[i].cells[j].textContent =
-          this.startTable[i][j] !== 0 ? this.startTable[i][j] : '';
-      }
-    }
+    this.statusGame = 'playing';
+    this.randomCells(2);
 
-    this.genereteCellNum();
-    this.getState();
+    return this;
   }
 
   restart() {
-    Array.from(tbody.rows).forEach((row) => {
-      Array.from(row.cells).forEach((cells) => {
-        cells.textContent = '';
-      });
-    });
+    this.gameStatus = this.tabelStart.map((row) => [...row]);
+    this.statusGame = 'idle';
+    this.gameScore = 0;
 
-    this.genereteCellNum();
+    this.getScore();
   }
 
-  genereteCellNum(count = 2) {
-    const used = new Set();
+  randomCells(cell = 1) {
+    for (let i = 0; i < cell; i++) {
+      const randomNum = Math.random() > 0.9 ? 4 : 2;
+      const rowIndex = Math.floor(Math.random() * 4);
+      const cellsIndex = Math.floor(Math.random() * 4);
 
-    while (used.size < count) {
-      const rowIndex = Math.floor(Math.random() * tbody.rows.length);
-      const sellIndex = Math.floor(
-        Math.random() * tbody.rows[rowIndex].cells.length,
-      );
-      const key = `${rowIndex}-${sellIndex}`;
-
-      if (used.has(key)) {
-        continue;
+      if (this.gameStatus[rowIndex][cellsIndex] === 0) {
+        this.gameStatus[rowIndex][cellsIndex] = randomNum;
+      } else {
+        this.randomCells(1);
       }
-
-      const cell = table.rows[rowIndex].cells[sellIndex];
-
-      if (cell.textContent) {
-        continue;
-      }
-
-      used.add(key);
-
-      const cellNumberElement = Math.random() > 0.9 ? 4 : 2;
-
-      cell.textContent = cellNumberElement;
     }
+  }
+
+  cellgood(arr) {
+    let newArr = [...arr];
+
+    for (let j = 0; j < newArr.length; j++) {
+      if (newArr[j] === newArr[j + 1]) {
+        newArr[j] *= 2;
+        this.gameScore += +newArr[j];
+        newArr.splice(j + 1, 1);
+      }
+    }
+
+    newArr = newArr.filter((n) => n !== 0);
+
+    while (newArr.length < 4) {
+      newArr.push(0);
+    }
+
+    return newArr;
+  }
+
+  winGame() {
+    if (this.gameStatus.flat().some((n) => n === 2048)) {
+      this.statusGame = 'win';
+    }
+  }
+
+  losegame() {
+    for (let i = 0; i < this.gameStatus.length; i++) {
+      const row = this.gameStatus[i];
+      const colum = this.gameStatus.map((n) => n[i]);
+
+      if (colum.includes(0) || row.includes(0)) {
+        return;
+      }
+
+      for (let j = 0; j < row.length; j++) {
+        if (row[j] === row[j + 1]) {
+          return;
+        }
+      }
+
+      for (let j = 0; j < row.length; j++) {
+        if (colum[j] === colum[j + 1]) {
+          return;
+        }
+      }
+    }
+    this.statusGame = 'lose';
   }
 }
 
