@@ -26,7 +26,7 @@ class Game {
 
       let newRow = row.filter((n) => n !== 0);
 
-      newRow = this.cellgood(newRow);
+      newRow = this.cellDood(newRow);
 
       for (let n = 0; n < newRow.length; n++) {
         if (this.gameStatus[i][n] !== newRow[n]) {
@@ -54,7 +54,7 @@ class Game {
 
       let newRow = row.filter((n) => n !== 0);
 
-      newRow = this.cellgood(newRow);
+      newRow = this.cellDood(newRow);
 
       newRow.reverse();
 
@@ -84,7 +84,7 @@ class Game {
 
       let newColumn = colum.filter((n) => n !== 0);
 
-      newColumn = this.cellgood(newColumn);
+      newColumn = this.cellDood(newColumn);
 
       for (let k = 0; k < colum.length; k++) {
         if (this.gameStatus[k][i] !== newColumn[k]) {
@@ -112,7 +112,7 @@ class Game {
 
       let newColumn = colum.filter((n) => n !== 0);
 
-      newColumn = this.cellgood(newColumn);
+      newColumn = this.cellDood(newColumn);
 
       newColumn.reverse();
 
@@ -132,7 +132,7 @@ class Game {
 
   getScore() {
     this.winGame();
-    this.losegame();
+    this.loseGame();
 
     return this.gameScore;
   }
@@ -174,7 +174,7 @@ class Game {
     }
   }
 
-  cellgood(arr) {
+  cellDood(arr) {
     let newArr = [...arr];
 
     for (let j = 0; j < newArr.length; j++) {
@@ -200,7 +200,7 @@ class Game {
     }
   }
 
-  losegame() {
+  loseGame() {
     for (let i = 0; i < this.gameStatus.length; i++) {
       const row = this.gameStatus[i];
       const colum = this.gameStatus.map((n) => n[i]);

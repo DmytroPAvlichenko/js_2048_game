@@ -17,12 +17,12 @@ const score = document.querySelector('.game-score');
 
 let keydown = false;
 
-gameButton.addEventListener('click', (cl) => {
+gameButton.addEventListener('click', (ev) => {
   gameButton.classList.add('restart');
   gameButton.textContent = 'Restart';
   message.forEach((el) => el.classList.add('hidden'));
 
-  if (cl.target.classList.contains('start')) {
+  if (ev.target.classList.contains('start')) {
     gameButton.classList.remove('start');
     gameButton.classList.add('restart');
     gameButton.textContent = 'Restart';
@@ -35,7 +35,7 @@ gameButton.addEventListener('click', (cl) => {
     return;
   }
 
-  if (cl.target.classList.contains('restart')) {
+  if (ev.target.classList.contains('restart')) {
     gameButton.classList.add('start');
     gameButton.classList.remove('restart');
     gameButton.textContent = 'Start';
@@ -64,14 +64,11 @@ function gameBoardUpdate(arr) {
   score.textContent = game.gameScore;
 
   if (game.statusGame === 'lose') {
-    game.statusGame = 'lose';
-
     loseMessage.classList = 'message message-lose';
     game.getStatus();
   }
 
   if (game.statusGame === 'win') {
-    game.statusGame = 'win';
     winMessage.classList = 'message message-win';
     game.getStatus();
   }
